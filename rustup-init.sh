@@ -11,6 +11,10 @@ PS4func() {
     local c="\033[0;36m" y="\033[0;33m" n="\033[0m"
     local d=$((${#FUNCNAME[@]}-2))
 
+    if [[ $lineno == 1 ]]
+    then lineno=0
+    fi
+
     for ((i=d; i>0; i--))
     do printf -v f "%s%s()" "$f" "${FUNCNAME[i]}"
     done
