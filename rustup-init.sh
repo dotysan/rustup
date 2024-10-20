@@ -9,10 +9,13 @@ PS4func() {
     local lineno="$1"
     local i f=''
     local c="\033[0;36m" y="\033[0;33m" n="\033[0m"
-    for ((i=${#FUNCNAME[@]}-2; i>0; i--))
-    do f+="${FUNCNAME[i]:+${FUNCNAME[i]}()}"
+    local d=$((${#FUNCNAME[@]}-2))
+
+    for ((i=d; i>0; i--))
+    do printf -v f "%s%s()" "$f" "${FUNCNAME[i]}"
     done
-    printf "$y%s:%03d$c%s$n " "$(basename "${BASH_SOURCE[0]}")" "$lineno" "$f"
+
+    printf "$y%s:%04d$c%s$n " "${BASH_SOURCE[1]##*/}" "$lineno" "$f"
 }
 PS4='\r$(PS4func $LINENO)'
 
