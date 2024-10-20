@@ -1,6 +1,20 @@
-#!/bin/sh
-# shellcheck shell=dash
-# shellcheck disable=SC2039  # local is non-POSIX
+#! /usr/bin/env bash
+#
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+
+PS4func() {
+    local lineno="$1"
+    local i f=''
+    local c="\033[0;36m" y="\033[0;33m" n="\033[0m"
+    for ((i=${#FUNCNAME[@]}-2; i>0; i--))
+    do f+="${FUNCNAME[i]:+${FUNCNAME[i]}()}"
+    done
+    printf "$y%s:%03d$c%s$n " "$(basename "${BASH_SOURCE[0]}")" "$lineno" "$f"
+}
+PS4='\r$(PS4func $LINENO)'
 
 # This is just a little script that can be downloaded from the internet to
 # install rustup. It just does platform detection, downloads the installer
@@ -22,8 +36,6 @@ has_local 2>/dev/null || alias local=typeset
 is_zsh() {
     [ -n "${ZSH_VERSION-}" ]
 }
-
-set -u
 
 # If RUSTUP_UPDATE_ROOT is unset or empty, default it.
 RUSTUP_UPDATE_ROOT="${RUSTUP_UPDATE_ROOT:-https://static.rust-lang.org/rustup}"
@@ -96,6 +108,8 @@ main() {
         exit 1
     fi
     local _file="${_dir}/rustup-init${_ext}"
+    # shellcheck disable=SC2064  # we want to expand now
+    trap "rm ${_file};rmdir ${_dir}" EXIT
 
     local _ansi_escapes_are_valid=false
     if [ -t 2 ]; then
@@ -174,12 +188,7 @@ main() {
         ignore "$_file" "$@"
     fi
 
-    local _retval=$?
-
-    ignore rm "$_file"
-    ignore rmdir "$_dir"
-
-    return "$_retval"
+    return "$?"
 }
 
 get_current_exe() {
